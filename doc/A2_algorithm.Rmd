@@ -1,0 +1,140 @@
+---
+title: "A2 Algoritm"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### Import the needed packages
+```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+import random
+import operator
+import pandas as pd
+import numpy as np
+```
+
+### Constant values
+```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+
+rating_path = '../data/ml-latest-small/ratings.csv'
+train_path = '../data/train_set.csv'
+test_path = '../data/test_set.csv'
+
+train_frac = 0.8
+latent_dim = 100
+sigma = 0.5
+sigma_p = 0.5
+sigma_q = 0.5
+mu = 0
+```
+### Step 1 Load Data and Train-test Split
+We first shuffel the data. Then split the data to train and test by 80:20. And, they are saved in .CSV file in order to be use same data for each algorithm for the sake of comparison.
+
+```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+
+rating_pd = pd.read_csv(rating_path)
+num_user = np.unique(rating_pd.values[:, 0]).shape[0]
+num_movie = np.unique(rating_pd.values[:, 1]).shape[0]
+
+# df_shuffled = rating_pd.sample(frac=1).reset_index(drop=True)
+# train_set = df_shuffled.iloc[:int(train_frac * len(df_shuffled))]
+# train_set.to_csv(path_or_buf=train_path, index=False)
+# test_set = df_shuffled.iloc[int(train_frac * len(df_shuffled)):]
+# test_set.to_csv(path_or_buf=test_path, index=False)
+train_rating_pd = pd.read_csv(train_path)
+```
+
+### Step 2 Creating the matrixes
+```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE, results='hide'}
+r_matrix = np.zeros((num_user, num_movie))
+p_matrix = np.random.normal(mu, sigma_p, (num_user, latent_dim))
+q_matrix = np.random.normal(mu, sigma_q, (num_movie, latent_dim))
+
+movie_dic = {}
+idx = 0
+for movie_id in np.unique(train_rating_pd.values[:, 1]):
+    movie_dic[movie_id] = idx
+    idx += 1
+    
+movie_IDD = set(rating_pd['movieId'].unique().tolist())
+train_ID = set(train_rating_pd['movieId'].unique().tolist())
+not_in_training_ID = movie_IDD - train_ID    
+
+for index, row in train_rating_pd.iterrows():
+    r_matrix[int(row['userId'] - 1), movie_dic[row['movieId']]] = row['rating']
+    
+sorted_dic = sorted(movie_dic.items(), key=operator.itemgetter(1))
+
+
+## saving the movie_ID dictionary
+with open('../output/movie_indexes.csv', 'w') as f:
+    f.write('matrix_index,movie_id\n')
+    for movie_id, index in sorted_dic:
+        f.write('{},{}\n'.format(index, int(movie_id)))  
+index = len(sorted_dic)
+with open('../doc/movie_indexes.csv', 'a') as f:
+    for movie_id in not_in_training_ID:
+        f.write('{},{}\n'.format(index, int(movie_id)))
+        index += 1
+```
+
+### Step 3 Implementing the algorithm
+```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+def MSE (r, p, q):
+    p_qt_matrix = np.dot(p, q.T)
+    result = r - p_qt_matrix
+    I = np.zeros_like(r)
+    I[r != 0] = 0.5
+    result = np.power(result, 2)
+    result = np.multiply(I, result)
+    return np.sum(result)
+    
+def L2_loss(sig1, sig2, matrix):
+    result = np.power(matrix, 2)
+    result = np.sum(result)
+    constant = sig1 / float(sig2 * 2)
+    return constant * result  
+    
+def p_q_derivative (r, p, q, sigma, sigma_p, sigma_q):
+    p_qt_matrix = np.dot(p, q.T)
+    residual = r - p_qt_matrix
+    I = np.zeros_like(r)
+    I[r != 0] = 1
+    residual = np.multiply(I, residual)
+    p_derivative = -1.0 * np.dot(residual, q) + sigma / sigma_p * p
+    q_derivative = -1.0 * np.dot(residual.T, p) + sigma / sigma_q * q
+    return p_derivative, q_derivative    
+```
+
+### Step 4 Running the algorithm to rech the threshhold
+We are runnig the model using the dynamic learning rate. Also, we find out the threshhold by running the model.
+```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+big_lr = 0.001
+small_lr = 0.0001
+cnt = 0
+
+error = MSE(r_matrix, p_matrix, q_matrix) + L2_loss(sigma, sigma_q, q_matrix) + L2_loss(sigma, sigma_p, p_matrix)
+
+while (error >= 238):
+    break ## not to run again
+
+    if error > 300:
+        learning_rate = big_lr
+    else:
+        learning_rate = small_lr
+
+    p_derivative, q_derivative = p_q_derivative (r_matrix, p_matrix, q_matrix, sigma, sigma_p, sigma_q)
+    p_matrix = p_matrix - learning_rate * p_derivative
+    q_matrix = q_matrix - learning_rate * q_derivative
+    error = MSE(r_matrix, p_matrix, q_matrix)
+    cnt += 1
+    # if cnt % 100 == 0:
+    #     print(error)
+
+# pd.DataFrame(p_matrix).to_csv("../output/p_matrix_A2_final.csv")
+# pd.DataFrame(q_matrix).to_csv("../output/q_matrix_A2_final.csv")
+```
+
+
+
