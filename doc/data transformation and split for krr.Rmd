@@ -1,0 +1,64 @@
+---
+title: "Postprocessing data cleaning"
+author: "nuanjun zhao"
+date: "11/18/2019"
+output: html_document
+---
+
+```{r}
+train_set<-read.csv("../data/train_set.csv")
+train_split<-split(train_set,train_set$userId)
+q<-read.csv("../output/q_matrix_A2_final.csv")
+q<-as.matrix(q[,-1])
+q<-t(q)
+dim(q)
+movie<-read.csv("../output/movie_indexes.csv")
+movie<-movie[,-1]
+dim(train_set)
+```
+
+```{r}
+new_q_split<-list()
+for (k in 1:length(train_split)){
+  new<-c()
+for (i in 1:dim(train_split[[k]])[1]){
+ new<-cbind(new,q[,which(movie==train_split[[k]]$movieId[i])])
+}
+  new_q_split[[k]]<-new
+}
+normal<-function(a){
+  return(a/sqrt(sum(a^2)))
+}
+x_split<-list()
+for (k in 1:length(train_split)){
+ x_split[[k]]<-apply(new_q_split[[k]],2,normal)
+}
+data_split<-list()
+for (k in 1:length(train_split)){
+  data_split[[k]]<-cbind(train_split[[k]]$rating,t(x_split[[k]]))
+}
+save(data_split,file = "../output/data_split.RData")
+ # sum<-0
+ # for (k in 1:length(train_split)){
+ # sum<-sum+dim(x_split[[k]])[2]}
+ # sum
+sum(lapply(data_split, nrow))
+```
+
+```{r}
+new_q_split<-list()
+for (k in 1:length(train_split)){
+  new<-c()
+for (i in 1:dim(train_split[[k]])[1]){
+ new<-cbind(new,q[,which(movie==train_split[[k]]$movieId[i])])
+}
+  new_q_split[[k]]<-new
+}
+big_user_id<-c()
+for (k in 1:length(train_split)){
+if(dim(data_split[[k]])[1]>1000){
+ big_user_id <-c(big_user_id,k)
+}
+}
+```
+
