@@ -28,16 +28,20 @@ cv.krr <- function(data, kfold, lam){
   
   for (j in cv.id){
     
+    #Split Data in train and validation sets
     x.train.cv <- data.x[-j,]
     y.train.cv <- data.y[-j]
     
     x.validation.cv <- data.x[j,]
     y.validation.cv <- data.y[j]
     
+    #Run Model
     mod.cv <- krr(x = x.train.cv,  y.train.cv, lambda = lam)
     
+    #Estimate predictin of validation test
     pred.cv <- predict(mod.cv, x.validation.cv)
     
+    #Calculate RMSE
     rmse.cv <- sqrt(mean((y.validation.cv - pred.cv)^2))
     cv.tuning <- cbind(cv.tuning, rmse.cv)
     cv.mean <- mean(cv.tuning)
@@ -51,6 +55,8 @@ cv.krr <- function(data, kfold, lam){
 ```{r TUNE LAMBDA SMALL}
 load("../output/data_split.RData")
 load("../output/data_split_small.RData")
+
+cv.krr(data_split_small[[1]], 5, 1)
 
 lambdas_small <- c(0.1, 0.2, 0.3, 0.4)
 
@@ -97,14 +103,13 @@ predict.krr <- function(data.train, data.test){
 ```
 
 ```{r WEIGHTED AVERAGE}
-weights <- seq(0.9, 0.1, length=9)
+weights <- c(0.1, 0.9)
 
 rmse <- c()
 for (w in weights){
   rating.weighted <- rating.sda(1-w) + rating.krr(w)
-  r <- rmse(rating.true, rating.final)
-  rmse <- sqrt(mean((y.true - rating.weighted)^2))
-  rmse <- rbind(rmse, weights)
+  r <- sqrt(mean((y.true - rating.weighted)^2))
+  rmse <- rbind(rmse, r)
 }
 
 ```
