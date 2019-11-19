@@ -42,7 +42,6 @@ save(data_split,file = "../output/data_split.RData")
  # for (k in 1:length(train_split)){
  # sum<-sum+dim(x_split[[k]])[2]}
  # sum
-sum(lapply(data_split, nrow))
 ```
 
 ```{r}
@@ -56,9 +55,13 @@ for (i in 1:dim(train_split[[k]])[1]){
 }
 big_user_id<-c()
 for (k in 1:length(train_split)){
-if(dim(data_split[[k]])[1]>1000){
+if(dim(data_split[[k]])[1]>800){
  big_user_id <-c(big_user_id,k)
 }
 }
+data_split_big<-data_split[big_user_id]
+data_split_small<-data_split[-big_user_id]
+save(data_split_big,file = "../output/data_split_big.RData")
+save(data_split_small,file = "../output/data_split_small.RData")
 ```
 
