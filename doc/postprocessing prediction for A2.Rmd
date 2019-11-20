@@ -1,0 +1,118 @@
+---
+title: "Postprocessing for A2"
+author: "nuanjun zhao"
+date: "11/18/2019"
+output: html_document
+---
+
+```{r packages}
+install.packages("remotes")
+remotes::install_github("TimothyKBook/krr")
+
+library(krr)
+library(dplyr)
+library(caret)
+```
+
+```{r}
+train_set<-read.csv("../data/train_set.csv")
+q<-read.csv("../output/q_matrix_A2_final.csv")
+movie<-read.csv("../output/movie_indexes.csv")
+train_split<-split(train_set,train_set$userId)
+q<-as.matrix(q[,-1])
+q<-t(q)
+movie<-read.csv("../output/movie_indexes.csv")
+movie<-movie[,-1]
+```
+
+```{r}
+new_q_split<-list()
+for (k in 1:length(train_split)){
+  new<-c()
+for (i in 1:dim(train_split[[k]])[1]){
+ new<-cbind(new,q[,which(movie==train_split[[k]]$movieId[i])])
+}
+  new_q_split[[k]]<-new
+}
+normal<-function(a){
+  return(a/sqrt(sum(a^2)))
+}
+q_trans<-t(apply(q,2,normal))
+x_split<-list()
+for (k in 1:length(train_split)){
+ x_split[[k]]<-apply(new_q_split[[k]],2,normal)
+}
+data_split<-list()
+for (k in 1:length(train_split)){
+  data_split[[k]]<-cbind(train_split[[k]]$rating,t(x_split[[k]]))
+}
+save(data_split,file = "../output/data_split.RData")
+```
+
+```{r CV FUNCTION}
+cv.krr <- function(data, kfold, lam){
+  
+  set.seed(123)
+  
+  data.x <- as.matrix(data[,-1])
+  data.y <- data[,1]
+  
+  n <- nrow(data.x)
+  cv.id <- createFolds(1:n, k = kfold)
+  
+  cv.tuning <- c()
+  
+  for (j in cv.id){
+    
+    #Split Data in train and validation sets
+    x.train.cv <- data.x[-j,]
+    y.train.cv <- data.y[-j]
+    
+    x.validation.cv <- data.x[j,]
+    y.validation.cv <- data.y[j]
+    
+    #Run Model
+    mod.cv <- krr(x = x.train.cv,  y.train.cv, lambda = lam)
+    
+    #Estimate predictin of validation test
+    pred.cv <- predict(mod.cv, x.validation.cv)
+    
+    #Calculate RMSE
+    rmse.cv <- sqrt(mean((y.validation.cv - pred.cv)^2))
+    cv.tuning <- cbind(cv.tuning, rmse.cv)
+    cv.mean <- mean(cv.tuning)
+    }
+  
+  return(cv.mean)
+}
+```
+
+```{r TUNE LAMBDA}
+load("../output/data_split.RData")
+
+lambdas <- c(0.45,0.5,0.55)
+
+mse <- c()
+
+for (x in lambdas){
+  m <- lapply(data_split, cv.krr,10, x)
+  mse <- cbind(mse, sum(unlist(m)))
+}
+```
+
+
+```{r}
+train_model<-vector(mode="list",length=length(data_split))
+for(i in 1:length(data_split)){
+  train_model[[i]]<-krr(data_split[[i]][,-1],data_split[[i]][,1],0.45)
+}
+pred_rating<-matrix(NA,nrow=length(data_split),ncol=dim(q)[2])
+for (i in 1:length(data_split)){
+  pred_rating[i,]<-predict(train_model[[i]],q_trans)
+}
+save(pred_rating,file = "../output/pred_rating1.RData")
+```
+
+
+
+
