@@ -10,7 +10,6 @@ remotes::install_github("TimothyKBook/krr")
 library(krr)
 library(dplyr)
 library(caret)
-library(ModelMetrics)
 ```
 
 ```{r MAIN FUNCTION}
@@ -51,56 +50,74 @@ cv.krr <- function(data, kfold, lam){
 }
 ```
 
-
-```{r TUNE LAMBDA SMALL}
+```{r TUNE LAMBDA}
 load("../output/data_split.RData")
 load("../output/data_split_small.RData")
 
-cv.krr(data_split_small[[1]], 5, 1)
+lambdas <- c(0.4, 0.5, 0.6)
 
-lambdas_small <- c(0.1, 0.2, 0.3, 0.4)
+mse <- c()
 
-mse.small <- c()
-
-for (x in lambdas_small){
-  m.small <- lapply(data_split_small, cv.krr, 5, 1)
-  mse.small <- cbind(mse.small, sum(unlist(m.small)))
-  mse.small <- rbind(mse.small, lambdas_small)
+for (x in lambdas){
+  m <- lapply(data_split, cv.krr, 5, x)
+  mse <- cbind(mse, sum(unlist(m)))
 }
 ```
 
-```{r TUNE LAMBDA BIG}
-load("../output/data_split_big.RData")
-
-lambdas_big <- c(0.4, 0.5, 0.6, 0.7, 0.8)
-
-mse.big <- c()
-
-for (x in lambdas_big){
-  m.big <- lapply(data_split_big, cv.krr, 5, x)
-  mse.big <- cbind(mse.big, sum(unlist(m.big)))
-  mse.big <- rbind(mse.big, lambdas_big)
-}
-```
-
-```{r RUN REGRESSION}
-bestlam <- 0.5
-
-predicted.rating <- c()
-
-predict.krr <- function(data.train, data.test){
+```{r PREDICT FUNCTION TRAIN}
+krr.pred.train <- function(data, bestlam){
   
+  #Split predictors and outcome
   data.x <- as.matrix(data[,-1])
   data.y <- data[,1]
   
-  data.x.test <- as.matrix
-  
+  #Run Mode
   mod <- krr(x = data.x,  y = data.y, lambda = bestlam)
-  pred <- predict(mod, x.test)
   
-  predicted.rating <- c(predicted.rating, pred)
+  #Extracted predicted outcome
+  pred <- mod$pred
+  
+  return(pred)
 }
 ```
+
+```{r RUN FUNCTION TRAIN}
+sel <- function(data){
+  return(data[,1])
+}
+
+rating.krr.train <- unlist(lapply(data_split, krr.pred.train, 0.5))
+rating.true <- unlist(lapply(data_split, sel))
+sqrt(mean((rating.true - rating.krr.train)^2))
+```
+
+```{r PREDICT FUNCTION TEST}
+krr.pred.test <- function(data.train, data.test, bestlam){
+  
+  #Split predictors and outcome
+  data.x <- as.matrix(data.train[,-1])
+  data.y <- data.train[,1]
+  
+  data.test.x <- as.matrix(data.test[,-1])
+  
+  #Run Mode
+  mod <- krr(x = data.x,  y = data.y, lambda = bestlam)
+  
+  #Extracted predicted outcome
+  pred <- predict(mod, data.test.x)
+  
+  return(pred)
+}
+
+```
+
+```{r}
+rating.krr.test <- unlist(lapply(data_split, krr.pred.test, 0.5))
+sqrt(mean((rating.true - rating.krr.test)^2))
+```
+
+
+
 
 ```{r WEIGHTED AVERAGE}
 weights <- c(0.1, 0.9)
