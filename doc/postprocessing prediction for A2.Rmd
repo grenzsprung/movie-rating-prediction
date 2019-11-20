@@ -47,7 +47,6 @@ for (k in 1:length(train_split)){
   data_split[[k]]<-cbind(train_split[[k]]$rating,t(x_split[[k]]))
 }
 save(data_split,file = "../output/data_split.RData")
-load("../output/data_split.RData")
 ```
 
 ```{r CV FUNCTION}
