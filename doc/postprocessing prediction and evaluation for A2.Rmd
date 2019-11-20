@@ -6,8 +6,23 @@ output: html_document
 ---
 
 ```{r packages}
-#installed.packages("remotes")
-remotes::install_github("TimothyKBook/krr")
+if(!require("remotes")){
+  install.packages("remotes")
+}
+
+if(!require("krr")){
+  remotes::install_github("TimothyKBook/krr")
+}
+
+if(!require("dplyr")){
+  install.packages("dplyr")
+}
+
+if(!require("caret")){
+  install.packages("caret")
+}
+
+
 library(krr)
 library(dplyr)
 library(caret)
@@ -17,10 +32,10 @@ library(caret)
 #read output and data
 train_set<-read.csv("../data/train_set.csv")
 test_set<-read.csv("../data/test_set.csv")
-q<-read.csv("../output/q_matrix_A2_final.csv")
+q <- read.csv("../output/q_matrix_A2_final.csv")
+q <- read.csv("../output/q_matrix_A2_10dim.csv")
 movie<-read.csv("../output/movie_indexes.csv")
-movie<-read.csv("../output/movie_indexes.csv")
-rating.a2<-read.csv("../output/r_100.csv")
+rating.a2 <- read.csv("../output/r_100.csv")
 ```
 
 ```{r}
@@ -82,14 +97,16 @@ cv.krr <- function(data, kfold, lam){
 
 ```{r TUNE LAMBDA}
 #find a best lambda
-lambdas <- c(0.45,0.5,0.55)
+lambdas <- c(9,10,11)
 rmse_tune <- data.frame(lambdas=lambdas,rmse=rep(0,length(lambdas)))
 for (i in 1:length(lambdas)){
   m <- lapply(data_split, cv.krr, 5, lambdas[i])
   rmse_tune[i,2] <-  sum(unlist(m))
 }
 
-rmse_tune
+best_lambda <- rmse_tune %>%
+  filter(rmse == min(rmse))
+best_lambda <- best_lambda$lambdas
 ```
 
 
@@ -97,7 +114,7 @@ rmse_tune
 #use tuned lambda to train 610 users model
 train_model<-vector(mode="list",length=length(data_split))
 for(i in 1:length(data_split)){
-  train_model[[i]]<-krr(data_split[[i]][,-1],data_split[[i]][,1],0.45)}
+  train_model[[i]]<-krr(data_split[[i]][,-1],data_split[[i]][,1], best_lambda)}
 #get prediction in a matrix with dimension 610*9724
 pred_rating<-matrix(NA,nrow=length(data_split),ncol=dim(q)[2])
 for (i in 1:length(data_split)){
@@ -115,7 +132,7 @@ rownames(pred_rating)<-c(1:610)
 ```
 
 ```{r}
-#function to cacluate mse
+#function to calculate mse
   mea<-function(data,test){
   movies<-data$movieId
   users<-data$userId
