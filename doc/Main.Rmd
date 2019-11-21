@@ -48,15 +48,25 @@ if(!require("caret")){
   install.packages("caret")
 }
 
-#installed.packages("remotes")
-remotes::install_github("TimothyKBook/krr")
-#installed.packages("krr")
+if(!require("remotes")){
+  install.packages("remotes")
+}
+
+if(!require("krr")){
+  remotes::install_github("TimothyKBook/krr")
+}
+
+if(!require("reticulate")){
+install.packages("reticulate")
+}
+
 
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(caret)
-
+library(krr)
+library(reticulate)
 ```
 
 ```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE, echo = F}
@@ -149,7 +159,7 @@ with open('../doc/movie_indexes.csv', 'a') as f:
 ### 1.2: Implement the algorithm
 We then define the functions for the algorithm.
 
-```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+```{python, message=FALSE, warning=FALSE}
 def MSE (r, p, q):
     p_qt_matrix = np.dot(p, q.T)
     result = r - p_qt_matrix
@@ -180,7 +190,7 @@ def p_q_derivative (r, p, q, sigma, sigma_p, sigma_q):
 ### 1.3: Run the algorithm to reach the threshold
 We are runnig the model using a dynamic learning rate. We find out the threshold by running the model.
 
-```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+```{python, message=FALSE, warning=FALSE}
 big_lr = 0.001
 small_lr = 0.0001
 cnt = 0
