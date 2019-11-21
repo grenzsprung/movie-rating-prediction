@@ -359,6 +359,7 @@ for (i in 1:dim(train_split[[k]])[1]){
 
 normal<-function(a){return(a/sqrt(sum(a^2)))}
 
+#if the sum of squares of a vector is 0, the normalized vector should be 0.
 q_trans<-apply(q,2,normal)
 q_trans[which(is.na(q_trans))]<-0
 
