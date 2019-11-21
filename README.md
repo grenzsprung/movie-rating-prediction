@@ -22,9 +22,6 @@ In this project, we implemented two algorithms for collaborative filtering from 
 + Stephanie Wong: implement A3 algorithm (Alternating Least Squares)
 + Nuanjun Zhao: Mainly post processing and evaluation part. Worked with Stefano, came up with how krr works and discussed about post processing with krr with him. Write 90% codes for A2 and A3 Krr and Evaluation. Run the codes and get the results for A3. Write the report for postprocessing and evaluation. Help with presentation.
 
-
-All team members approve our work presented in this GitHub repository including this contributions statement. 
-
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
 ```
