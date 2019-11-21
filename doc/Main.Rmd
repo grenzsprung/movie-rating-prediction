@@ -226,8 +226,8 @@ r = np.dot(p.values[:,1:],q.values[:,1:].T)
 
 ```{r}
 data <- read.csv("../data/ml-latest-small/ratings.csv")
-data_train <- read.csv("../data/train_set.csv")
-data_test <- read.csv("../data/test_set.csv")
+data_train <- read.csv("../output/train_set.csv")
+data_test <- read.csv("../output/test_set.csv")
 
 U <- length(unique(data$userId))
 I <- length(unique(data$movieId))
@@ -320,8 +320,8 @@ The post-processing is done here exemplarily for ALS with 100 latent factors. Th
 
 ```{r}
 #read output and data
-train_set<-read.csv("../data/train_set.csv")
-test_set<-read.csv("../data/test_set.csv")
+train_set<-read.csv("../output/train_set.csv")
+test_set<-read.csv("../output/test_set.csv")
 q<-read.csv("../output/A3_q_dim100.csv",header= FALSE)
 rating.a3<-read.csv("../output/A3_r_dim100.csv",header=FALSE)
 ```
@@ -513,7 +513,6 @@ mean11<-mea(test_set[1:10000,],rating.weighted[[best_weight]])
   rmse_test
   
 ```
-
 
 ### Visualization
 
