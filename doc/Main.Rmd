@@ -412,7 +412,7 @@ cv.krr <- function(data, kfold, lam){
 #find best lambda
 
 # The following lambdas should be compared when optimizing for 100 factors
-# However, when optimising for 50 and 10 factors, c(0.6, 0.65, and 0.7) are more appropriate
+# However, when optimising for 50 and 10 factors, c(0.55, 0.6, 0.65, and 0.7) are more appropriate
 
 lambdas <- c(0.45, 0.50, 0.55) 
 
@@ -427,7 +427,7 @@ rmse_tune
 
 ### 3.3: Train kernel ridge regression and get prediction
 
-0.7 is the best lambda for this model and then we use 0.7 to train 610 kernel ridge regression models. And then get a prediction matrix with dimension of 610*9724 for krr.
+0.5 is the best lambda for this model and then we use 0.5 to train 610 kernel ridge regression models. And then get a prediction matrix with dimension of 610*9724 for krr.
 
 
 ```{r}
@@ -466,7 +466,7 @@ rownames(pred_rating)<-c(1:610)
 
 We combined the predictions together and see if using weighted average will help further minimize RMSE. And we used cross validation to get the best weight.  
 
-For factor numbers of 10, we find the best weight is 0.7, which means krr has better prediction than ALS for nearly 70% ratings.But for 50 and 100 factors, the best weight is 1 which means krr is totally better than AlS. Maybe that's the point we should fo post processing after the algorithms.
+For factor numbers of 10, we find the best weight is 0.7, which means krr has better prediction than ALS for nearly 70% ratings. But for 50 and 100 factors, the best weight is 1 which means krr is totally better than just AlS. Maybe that's the point we should fo post processing after the algorithms.
 
 
 ```{r}
