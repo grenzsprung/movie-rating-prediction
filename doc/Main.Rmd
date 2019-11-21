@@ -67,9 +67,12 @@ library(ggplot2)
 library(caret)
 library(krr)
 library(reticulate)
+
+#Specify below the location of your python system
+use_python("/Users/stefano/opt/anaconda3/bin/python") 
 ```
 
-```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE, echo = F}
+```{python, message=FALSE, warning=FALSE, echo = F}
 import random
 import operator
 import pandas as pd
@@ -83,7 +86,7 @@ import numpy as np
 We prepare the data by first shuffling it. Then we split the data to train and test by a ratio of 80:20 and save them as .CSV file. We want to use exactly the same data for each algorithm for the sake of a fair comparison.
 
 
-```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+```{python, message=FALSE, warning=FALSE}
 
 rating_path = '../data/ml-latest-small/ratings.csv'
 
@@ -108,7 +111,7 @@ test_path = '../output/test_set.csv'
 ### Set constant values
 For both algorithms we are implementing we use three levels of latent factors: 10, 50 and 100. At first we have to define the constant values for GD with Probabilistic Assumptions including the number of latent factors. We set the mean for multivariate normal distribution we initialize to 0 and sigma to 0.5.
 
-```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE}
+```{python, message=FALSE, warning=FALSE}
 train_frac = 0.8
 latent_dim = 100 # can be changed to implement algorithm with other factor levels
 sigma = 0.5
@@ -121,7 +124,7 @@ mu = 0
 ### 1.1: Create the matrices
 Afterwards, we want to create the matrices as well as a movie_ID dictionary for post-processing later.
 
-```{python engine.path='/anaconda3/bin/python', message=FALSE, warning=FALSE, results='hide'}
+```{python, message=FALSE, warning=FALSE, results='hide'}
 train_rating_pd = pd.read_csv(train_path)
 
 r_matrix = np.zeros((num_user, num_movie))
