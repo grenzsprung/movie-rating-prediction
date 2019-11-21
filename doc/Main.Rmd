@@ -376,7 +376,8 @@ for (k in 1:length(train_split)){
 
 
 ### 3.2: Tuning parameter for kernel ridge regression
-We set the kernel as Gaussian as the paper said and use cross validation to get a smaller RMSE.
+
+We set the kernel as Gaussian as the paper said and use cross validation on lambda to get a smaller RMSE.
 
 ```{r CV FUNCTION}
 #write a function to do cross validation for parameter lambda in krr
@@ -425,6 +426,7 @@ rmse_tune
 
 
 ### 3.3: Train kernel ridge regression and get prediction
+
 0.7 is the best lambda for this model and then we use 0.7 to train 610 kernel ridge regression models. And then get a prediction matrix with dimension of 610*9724 for krr.
 
 
@@ -464,8 +466,7 @@ rownames(pred_rating)<-c(1:610)
 
 We combined the predictions together and see if using weighted average will help further minimize RMSE. And we used cross validation to get the best weight.  
 
-For factor numbers of 10, we find the best weight is 0.7, which means krr has better prediction than ALS for nearly 70% ratings.
-But for 50 and 100 factors, the best weight is 1 which means krr is totally better than AlS. Maybe that's the point we should fo post processing after the algorithms.
+For factor numbers of 10, we find the best weight is 0.7, which means krr has better prediction than ALS for nearly 70% ratings.But for 50 and 100 factors, the best weight is 1 which means krr is totally better than AlS. Maybe that's the point we should fo post processing after the algorithms.
 
 
 ```{r}
@@ -496,6 +497,7 @@ rmse_train
 **Part 4: Evalutation**
 
 ### Evaluation
+
 We used the tuned weight to evaluate on test data and get the final RMSE for the whole A3 algorithm with krr as post processing method.
 
 
