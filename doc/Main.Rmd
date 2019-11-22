@@ -3,10 +3,12 @@ title: "Collaborative Filtering with Matrix Factorization"
 author: "Group 8"
 date: "11/21/2019"
 output:
+  pdf_document:
+    toc: yes
   html_document:
-    toc: true
-    theme: united
     df_print: paged
+    theme: united
+    toc: yes
 ---
 
 
@@ -78,8 +80,9 @@ library(reshape2)
 library(gridExtra)
 library(cowplot)
 
+use_condaenv("r-reticulate")
 #Specify below the location of your python system
-use_python("/Users/stefano/opt/anaconda3/bin/python") 
+use_python("/anaconda3/bin/python",required =F) 
 ```
 
 ```{python, message=FALSE, warning=FALSE, echo = F}
@@ -359,8 +362,6 @@ We need to transform the results from ALS to the form that we can put into kerne
 ```{r}
 #data transformation and get input of krr for A3
 train_split<-split(train_set,train_set$userId)
-train_split1<-split(train_set,train_set$movieId)
-length(train_split1)
 movie<-as.vector(unlist(c(q[1,])))
 q<-as.matrix(q[-1,])
 ```
@@ -577,33 +578,6 @@ p2 <- ggplot(gs, aes(x = factors, y = value, colour=variable)) +
 grid.arrange(p1, p2, nrow = 1, widths = c(2.7,4))
 ```
 
-```{r}
-library(ggplot2)
-library(reshape2)
-library(gridExtra)
-library(cowplot)
-als.train <- c(1.240058, 1.250036, 1.234728)
-als.test <- c(1.258236, 1.250169, 1.23691)
-Train_RMSE <- c(1.287822, 1.217832, 1.192752)
-Test_RMSE <- c(1.349658, 1.254846, 1.241062)
-factors <- c(10, 50, 100)
-als <- melt(as.data.frame(cbind(factors, als.train, als.test)), id="factors")
-gs <- melt(as.data.frame(cbind(factors, Train_RMSE, Test_RMSE)), id="factors")
-p1 <- ggplot(als, aes(x = factors, y = value, colour=variable)) + 
-  geom_line() +
-  ggtitle("Alternating Least Squares") + 
-  theme(legend.position = "none") +
-  ylim(1.19, 1.35) + 
-  ylab("RMSE") + 
-  scale_x_continuous("Number of factors", breaks=c(10, 50, 100))
-p2 <- ggplot(gs, aes(x = factors, y = value, colour=variable)) + 
-  geom_line() + 
-  ggtitle("Gradient Descent") + 
-  ylim(1.19, 1.35) + 
-  ylab("RMSE") + 
-  scale_x_continuous("Number of factors", breaks=c(10, 50, 100))
-grid.arrange(p1, p2, nrow = 1, widths = c(2.7,4))
-```
 We can see from the plot that for A2 as the number of factors increases, RMSE goes down for both train data and test data. But for A3, it goes up and then goes down. This maybe because the train data we split does not include all the movies. 0 will appear in q matrix and will give 0 ratings. A3 is still better. However, it is possible that as we increase the number of factor for A2 and A3, according to the decreasing trend of RMSE for A2, we may get a lower RMSE than A3.
 
 
