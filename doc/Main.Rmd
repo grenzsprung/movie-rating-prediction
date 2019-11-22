@@ -2,7 +2,11 @@
 title: "Collaborative Filtering with Matrix Factorization"
 author: "Group 8"
 date: "11/21/2019"
-output: pdf_document
+output:
+  html_document:
+    toc: true
+    theme: united
+    df_print: paged
 ---
 
 
@@ -10,16 +14,8 @@ output: pdf_document
 
 In this project, we implemented two algorithms for collaborative filtering from scratch: Gradient Descent with Probabilistic Assumptions (A2 in the assignment) and Alternating Least Squares (A3). Afterwards, we used Kernel Ridge Regression (P3) for post-processing. Our results indicate that KRR is a significant improvement for the algorithms. Also, we found that the more latent factors we use, the lower the final RMSE. Overall, the ALS outperforms GD with Probabilistic Assumptions for all levels of latent factors on the the test data. 
 
-## Content
-Part 1: Implementing Gradient Descent (GD) with Probabilistic Assumptions
-Part 2: Implementing Alternating Least Squares (ALS)
-Part 3a: Post-processing for ALS
-Part 3b: Post-processing for GD with Probabilistic Assumptions
-Part 4: Evaluation
-
-## Note on the scope of this report
-This report outlines matrix factorization algorithms with 100 latent factors. We also conducted the same procedure for 10 as well as 50 factors but only load these results in Part 4 and do not run it in this .Rmd.
-
+**Note on the scope of this report**
+This report outlines matrix factorization algorithms with 100 latent factors. We also conducted the same procedure for 10 as well as 50 factors but only load these results in Part 4 and do not run them in this .Rmd.
 
 
 ```{r setup, include=FALSE}
@@ -28,16 +24,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r, message=FALSE, echo=F}
+if(!require("reticulate")){
+install.packages("reticulate")
+}
+
 if(!require("dplyr")){
   install.packages("dplyr")
 }
 
 if(!require("tidyr")){
   install.packages("tidyr")
-}
-
-if(!require("ggplot2")){
-  install.packages("ggplot2")
 }
 
 if(!require("ggplot2")){
@@ -56,17 +52,31 @@ if(!require("krr")){
   remotes::install_github("TimothyKBook/krr")
 }
 
-if(!require("reticulate")){
-install.packages("reticulate")
+if(!require("ggplot2")){
+  install.packages("ggplot2")
 }
 
+if(!require("reshape2")){
+  install.packages("reshape2")
+}
 
+if(!require("gridExtra")){
+  install.packages("gridExtra")
+}
+
+if(!require("cowplot")){
+  install.packages("cowplot")
+}
+
+library(reticulate)
 library(dplyr)
 library(tidyr)
-library(ggplot2)
 library(caret)
 library(krr)
-library(reticulate)
+library(ggplot2)
+library(reshape2)
+library(gridExtra)
+library(cowplot)
 
 #Specify below the location of your python system
 use_python("/Users/stefano/opt/anaconda3/bin/python") 
@@ -77,7 +87,6 @@ import random
 import operator
 import pandas as pd
 import numpy as np
-
 ```
 
 
@@ -106,7 +115,7 @@ test_path = '../output/test_set.csv'
 ```
 
 
-**Part 1: Implementing Gradient Descent with Probabilistic Assumptions**
+##**Part 1: Implementing Gradient Descent with Probabilistic Assumptions**
 
 ### Set constant values
 For both algorithms we are implementing we use three levels of latent factors: 10, 50 and 100. At first we have to define the constant values for GD with Probabilistic Assumptions including the number of latent factors. We set the mean for multivariate normal distribution we initialize to 0 and sigma to 0.5.
@@ -318,30 +327,33 @@ als3= ALS(f = 100, lambda = 5, max.iter=10, data, train=data_train, test=data_te
 mat5= als3$q
 mat6=t(as.matrix(als3$p))%*%as.matrix(als3$q)
 write.csv(mat5, file = "../output/A3_q_100.csv")
-write.csv(mat6, file = "../output/A3_q_100.csv")
+write.csv(mat6, file = "../output/A3_r_100.csv")
 ```
 
 
 ## **Part 3: Post-processing and Evaluation for Alternating Least Squares**
 
-The post-processing is done here exemplarily for ALS with 100 latent factors. The process for other levels of latent factors as well as for the GD with Probabilistic Assumptions is similar. There are only few marginal differences.
-- Use the respective q matrix outputs of the original algorithms
+As anticipated eariler, the post-processing is done here exemplarily for ALS with 100 latent factors. The process for other levels of latent factors as well as for the GD with Probabilistic Assumptions is similar. There are only few marginal differences:
+
+- Use the respective q matrix produced by the original algorithms
+
 - As the q-matrices produced by the two algorithms are slighlty different, the initial data manipulation is updated accordingly
-- The optimal ranges across which to test the tuning parameter lambda are different depending on the amount of factors
+
+- The optimal ranges across which to test the tuning parameter lambda are different depending on the amount of factors included
 
 
 ```{r}
 #read output and data
 train_set<-read.csv("../output/train_set.csv")
 test_set<-read.csv("../output/test_set.csv")
-q<-read.csv("../output/A3_q_dim100.csv",header= FALSE)
-rating.a3<-read.csv("../output/A3_r_dim100.csv",header=FALSE)
+q<-read.csv("../output/A3_q_100.csv",header= FALSE)
+rating.a3<-read.csv("../output/A3_r_100.csv",header=FALSE)
 ```
 
 
 ### 3.1: Prepare for kernel ridge regression input
 
-We need to transform the results from ALS to the form that we can put into kernel ridge regression. First, we should split rating data for 610 users since we should do krr for different users. Second, each column of q matrix we have from ALS represents a movie. We should to etract certain column of q matrix corresponding to the movie(movieid) users rating and then combine them to build 610 different transformed new q matrices. And then, nomarlize each column of new q matrix to get X (one of the input). 
+We need to transform the results from ALS to the form that we can put into kernel ridge regression. First, in order to implement krr on each user separately, we need to the split rating data for the 610 users. Second, each column of the ALS-generated q matrix represents a movie. We should extract certain column of q matrix corresponding to the movie(movieid) users rating and then combine them to build 610 different transformed new q matrices. And then, nomarlize each column of new q matrix to get X (which will be our predictor in kernel ridge regression. 
 
 
 ```{r}
@@ -353,13 +365,14 @@ movie<-as.vector(unlist(c(q[1,])))
 q<-as.matrix(q[-1,])
 ```
 
-```{r}
-#data transformation and get input of krr for A2
-train_split<-split(train_set,train_set$userId)
-train_split1<-split(train_set,train_set$movieId)
-length(train_split1)
-movie<-as.vector(unlist(c(q[1,])))
-q<-as.matrix(q[-1,])
+```{r eval=FALSE}
+# Data transformation for A2 is just slightly different since the relative q-matrix is transposed
+
+#train_split<-split(train_set,train_set$userId)
+#train_split1<-split(train_set,train_set$movieId)
+#length(train_split1)
+#movie<-as.vector(unlist(c(q[1,])))
+#q<-as.matrix(q[-1,])
 ```
 
 ```{r}
@@ -391,10 +404,10 @@ for (k in 1:length(train_split)){
 
 ### 3.2: Tuning parameter for kernel ridge regression
 
-We set the kernel as Gaussian as the paper said and use cross validation on lambda to get a smaller RMSE.
+We set the kernel as Gaussian (in line with the paper) and use cross validation to tune lambda so to minimise RMSE.
 
 ```{r CV FUNCTION}
-#write a function to do cross validation for parameter lambda in krr
+#write a function to do cross validation and tune parameter lambda in krr
 cv.krr <- function(data, kfold, lam){
   set.seed(123)
   data.x <- as.matrix(data[,-1])
@@ -428,27 +441,29 @@ cv.krr <- function(data, kfold, lam){
 # The following lambdas should be compared when optimizing for 100 factors
 # However, when optimising for 50 and 10 factors, c(0.55, 0.6, 0.65, and 0.7) are more appropriate
 
-lambdas <- c(0.45, 0.50, 0.55) 
+lambdas <- c(0.50, 0.55, 0.60) 
 
 rmse_tune <- data.frame(lambdas=lambdas,rmse=rep(0,length(lambdas)))
 for (i in 1:length(lambdas)){
   m <- lapply(data_split, cv.krr, 5, lambdas[i])
   rmse_tune[i,2] <-  sum(unlist(m))
 }
-rmse_tune
+
+best_lambda <- rmse_tune %>%
+  filter(rmse == min(rmse))
+best_lambda <- best_lambda$lambda
 ```
 
 
 ### 3.3: Train kernel ridge regression and get prediction
 
-0.5 is the best lambda for this model and then we use 0.5 to train 610 kernel ridge regression models. And then get a prediction matrix with dimension of 610*9724 for krr.
+0.5 is the best $\lambda$ for this model. Therefore, we use $\lambda = 0.5$  to train 610 kernel ridge regression models. And then get a prediction matrix with dimension of 610*9724 for krr.
 
-
-```{r}
+```{r Model Traning}
 #use tuned lambda to train 610 users model
 train_model<-vector(mode="list",length=length(data_split))
 for(i in 1:length(data_split)){
-  train_model[[i]]<-krr(data_split[[i]][,-1],data_split[[i]][,1],0.5)}
+  train_model[[i]]<-krr(data_split[[i]][,-1],data_split[[i]][,1], best_lambda)}
 #get prediction in a matrix with dimension 610*9724
 pred_rating<-matrix(0,nrow=length(data_split),ncol=dim(q)[2])
 for (i in 1:length(data_split)){
@@ -465,9 +480,9 @@ colnames(pred_rating)<-c(as.character(movie))
 rownames(pred_rating)<-c(1:610)
 ```
 
-```{r}
+```{r MSE Function}
 #function to cacluate mse
-  mea<-function(data,test){
+mea <- function(data,test){
   movies<-data$movieId
   users<-data$userId
   pred<-as.numeric(t(test[match(c(as.character(users)),rownames(test)),match(c(as.character(movies)),colnames(test))]))
@@ -480,7 +495,7 @@ rownames(pred_rating)<-c(1:610)
 
 We combined the predictions together and see if using weighted average will help further minimize RMSE. And we used cross validation to get the best weight.  
 
-For factor numbers of 10, we find the best weight is 0.7, which means krr has better prediction than ALS for nearly 70% ratings. But for 50 and 100 factors, the best weight is 1 which means krr is totally better than just AlS. Maybe that's the point we should fo post processing after the algorithms.
+For factor numbers of 10, we find the best weight is 0.7. For 50 and 100 factors, the best weight is 1, which means krr is a substantive improvement of ALS.
 
 
 ```{r}
@@ -488,7 +503,7 @@ For factor numbers of 10, we find the best weight is 0.7, which means krr has be
 weights <- seq(0,1,0.1)
 rmse_train <- data.frame(weights=weights,rmse=rep(0,length(weights)))
 rating.weighted<-list()
-dim(train_set)[1]
+
 for (i in 1:length(weights)){
   rating.weighted[[i]]<- rating.a3*(1-weights[i]) + pred_rating*weights[i]
   rating.weighted[[i]]<-as.matrix(rating.weighted[[i]])
@@ -503,14 +518,15 @@ for (i in 1:length(weights)){
   mean9<-mea(train_set[80001:dim(train_set)[1],],rating.weighted[[i]])
   rmse_train[i,2]<-sqrt(((mean1+mean2+mean3+mean4+mean5+mean6+mean7+mean8)*10000+(dim(train_set)[1]-80000)*mean9)/dim(train_set)[1])
 }
+
 rmse_train
 
 ```
 
 
-**Part 4: Evalutation**
+## **Part 4: Evalutation**
 
-### Evaluation
+### 4.1 Evaluation
 
 We used the tuned weight to evaluate on test data and get the final RMSE for the whole A3 algorithm with krr as post processing method.
 
@@ -518,17 +534,48 @@ We used the tuned weight to evaluate on test data and get the final RMSE for the
 ```{r}
 #get test rmse
 best_weight <- match(min(rmse_train$rmse), rmse_train$rmse)
-dim(test_set)[1]
 mean11<-mea(test_set[1:10000,],rating.weighted[[best_weight]])
-  mean21<-mea(test_set[10001:20000,],rating.weighted[[best_weight]])
-  mean32<-mea(test_set[20001:dim(test_set)[1],],rating.weighted[[best_weight]])
-  rmse_test<-sqrt(((mean11+mean21)*10000+(dim(test_set)[1]-20000)*mean32)/dim(test_set)[1])
-  rmse_test
+mean21<-mea(test_set[10001:20000,],rating.weighted[[best_weight]])
+mean32<-mea(test_set[20001:dim(test_set)[1],],rating.weighted[[best_weight]])
+rmse_test<-sqrt(((mean11+mean21)*10000+(dim(test_set)[1]-20000)*mean32)/dim(test_set)[1])
   
+rmse_test
 ```
 
-### Visualization
 
+### 4.2 Visualization
+
+After running the above code for both algorithms and for all three factor sizes (10, 50, 100), we have saved the resulting RMSEs in the files loaded below. This allows us to graphically visualise our results in the following way
+
+```{r Plot RMSE}
+load("../output/als_train_rmse.RData")
+load("../output/als_test_rmse.RData")
+load("../output/gs_train_rmse.RData")
+load("../output/gs_test_rmse.RData")
+
+factors <- c(10, 50, 100)
+
+als <- melt(as.data.frame(cbind(factors, als_train_rmse, als_test_rmse)), id="factors")
+gs <- melt(as.data.frame(cbind(factors, gs_train_rmse, gs_test_rmse)), id="factors")
+
+p1 <- ggplot(als, aes(x = factors, y = value, colour=variable)) + 
+  geom_line() +
+  ggtitle("Alternating Least Squares") + 
+  theme(legend.position = "none") +
+  ylim(1.19, 1.35) + 
+  ylab("RMSE") + 
+  scale_x_continuous("Number of factors", breaks=c(10, 50, 100))
+
+p2 <- ggplot(gs, aes(x = factors, y = value, colour=variable)) + 
+  geom_line() + 
+  ggtitle("Gradient Descent") + 
+  ylim(1.19, 1.35) + 
+  ylab("RMSE") + 
+  scale_x_continuous("Number of factors", breaks=c(10, 50, 100)) +
+  scale_colour_discrete(name = "Variables", labels = c("Train RMSE", "Test RMSE"))
+
+grid.arrange(p1, p2, nrow = 1, widths = c(2.7,4))
+```
 
 
 
