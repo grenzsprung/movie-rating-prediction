@@ -577,7 +577,33 @@ p2 <- ggplot(gs, aes(x = factors, y = value, colour=variable)) +
 grid.arrange(p1, p2, nrow = 1, widths = c(2.7,4))
 ```
 
-
+```{r}
+library(ggplot2)
+library(reshape2)
+library(gridExtra)
+library(cowplot)
+als.train <- c(1.240058, 1.250036, 1.234728)
+als.test <- c(1.258236, 1.250169, 1.23691)
+Train_RMSE <- c(1.287822, 1.217832, 1.192752)
+Test_RMSE <- c(1.349658, 1.254846, 1.241062)
+factors <- c(10, 50, 100)
+als <- melt(as.data.frame(cbind(factors, als.train, als.test)), id="factors")
+gs <- melt(as.data.frame(cbind(factors, Train_RMSE, Test_RMSE)), id="factors")
+p1 <- ggplot(als, aes(x = factors, y = value, colour=variable)) + 
+  geom_line() +
+  ggtitle("Alternating Least Squares") + 
+  theme(legend.position = "none") +
+  ylim(1.19, 1.35) + 
+  ylab("RMSE") + 
+  scale_x_continuous("Number of factors", breaks=c(10, 50, 100))
+p2 <- ggplot(gs, aes(x = factors, y = value, colour=variable)) + 
+  geom_line() + 
+  ggtitle("Gradient Descent") + 
+  ylim(1.19, 1.35) + 
+  ylab("RMSE") + 
+  scale_x_continuous("Number of factors", breaks=c(10, 50, 100))
+grid.arrange(p1, p2, nrow = 1, widths = c(2.7,4))
+```
 
 
 

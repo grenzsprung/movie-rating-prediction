@@ -17,13 +17,12 @@ In this project, we implemented two algorithms for collaborative filtering from 
 
 **Contribution statement**: 
 + Fateme Sadat Haghpanah: implemented algorithm A2 (Gradient Descent with Probabilistic Assumptions). Created the p and q matrix resulted by this algorithm for different factor sizes. Helped on completing the A2 algorithm part of main.Rmd
-+ Stefano Longo: implemented postprocessing and model evaluation. Responsible for repository cleaning and supported creation of final report.
++ Stefano Longo: Mainly responsible for understanding the process and theory behind postprocessing. Worked with Tim, Fatima and Stephanie to make sure the algorithm implementation and the post-processing parts were actually speaking to one another. Researched various possible krr functions and chose the one we implemented. Wrote Cross Validation function. Worked with Nuanjun to understand how to best compare the krr prediction with the original ratings. Cleaned repository and supported creation of final report.
 + Tim Schleicher: implemented algorithm A2 (Gradient Descent with Probabilistic Assumptions). Created the and q matrix resulted by this algorithm for different factor sizes. Pulled together all components of the project to build the final report.
 + Stephanie Wong: implement A3 algorithm (Alternating Least Squares)
-+ Nuanjun Zhao: Mainly post processing and evaluation part. Worked with Stefano, came up with how krr works and discussed about post processing with krr with him. Write 90% codes for A2 and A3 Krr and Evaluation. Run the codes and get the results for A3. Write the report for postprocessing and evaluation. Help with presentation.
++ Nuanjun Zhao: Post-porcessing and Evaluation: mainly contributed to the codes for this part, including all the codes: transformation of algorithms results, building 610 krr models and getting predictions, tuning weight of weighted average of prediction from algorithms and how to compute rmse for test data(evaluation),except tuning lambda; read and understood the second paper and discussed my understanding of the whole post processing and evaluation part with Stefano and make sure that makes sense; came up with the correct idea of how we transform q matrix how to realize krr function; Discussed with group members who work on algorithms to make sure their results seem correct; ran the codes and tuned parameters for this part of A3's results. responsible for the report for this part; explained the details of steps to my partner; helped with presentation; some of github arrangement work
 
-
-All team members approve our work presented in this GitHub repository including this contributions statement. 
+All team members approve our work presented in this GitHub repository including this contributions statement.
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
