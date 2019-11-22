@@ -604,7 +604,7 @@ p2 <- ggplot(gs, aes(x = factors, y = value, colour=variable)) +
   scale_x_continuous("Number of factors", breaks=c(10, 50, 100))
 grid.arrange(p1, p2, nrow = 1, widths = c(2.7,4))
 ```
-
+We can see from the plot that for A2 as the number of factors increases, RMSE goes down for both train data and test data. But for A3, it goes up and then goes down. This maybe because the train data we split does not include all the movies. 0 will appear in q matrix and will give 0 ratings. A3 is still better. However, it is possible that as we increase the number of factor for A2 and A3, according to the decreasing trend of RMSE for A2, we may get a lower RMSE than A3.
 
 
 
