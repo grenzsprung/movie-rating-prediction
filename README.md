@@ -1,21 +1,22 @@
-# Project 4: Algorithm implementation and evaluation: Collaborative Filtering
+# Applied Data Science @ Columbia University
+## Fall 2019
+## Project 4: Algorithm implementation from scratch and evaluation – Collaborative Filtering
 
-### [Project Description](doc/project4_desc.md)
+### ![](output/nyc-street-trees.jpg)
 
-Term: Fall 2019
+## Gradient Descent and Alternating Least Squares for movie rating predictions
 
-+ Team 8
-+ Projec title: Gradient Descent and Alternating Least Squares for movie rating prediction
-+ Team members
++ Team # Sec2 Group8
++ Team Members:
 	+ Fateme Sadat Haghpanah
 	+ Stefano Longo
 	+ Tim Schleicher
 	+ Stephanie Wong
 	+ Nuanjun Zhao
-	
-In this project, we implemented two algorithms for collaborative filtering from scratch: Gradient Descent with Probabilistic Assumtptions (A2 in the assignment) and Alternating Least Squares (A3). Afterwards, we used Kernel Ridge Regression (P3) for post-processing. Our results indicate that KRR is a valuable improvement for the algorithms. Also, we found that the more latent factors we use, the lower the final RMSE. Overall, ALS tends to outperform GD with Probabilistic Assumptions for all levels of latent factors on the the test data.
 
-**Contribution statement**: 
++ **Project summary**: In this project, we implemented two algorithms for collaborative filtering from scratch: Gradient Descent with Probabilistic Assumtptions (A2 in the assignment) and Alternating Least Squares (A3). Afterwards, we used Kernel Ridge Regression (P3) for post-processing. Our results indicate that KRR is a valuable improvement for the algorithms. Also, we found that the more latent factors we use, the lower the final RMSE. Overall, ALS tends to outperform GD with Probabilistic Assumptions for all levels of latent factors on the the test data.
+
++ **Contribution statement**:
 + Fateme Sadat Haghpanah: implemented algorithm A2 (Gradient Descent with Probabilistic Assumptions). Created the p and q matrix resulted by this algorithm for different factor sizes. Helped on completing the A2 algorithm part of main.Rmd
 + Stefano Longo: Mainly responsible for understanding the process and theory behind postprocessing. Worked with Tim, Fatima and Stephanie to make sure the algorithm implementation and the post-processing parts were actually speaking to one another. Researched various possible krr functions and chose the one we implemented. Wrote Cross Validation function. Worked with Nuanjun to understand how to best compare the krr prediction with the original ratings. Cleaned repository and supported creation of final report.
 + Tim Schleicher: implemented algorithm A2 (Gradient Descent with Probabilistic Assumptions). Created the and q matrix resulted by this algorithm for different factor sizes. Pulled together all components of the project to build the final report.
