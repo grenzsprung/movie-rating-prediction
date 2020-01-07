@@ -2,7 +2,7 @@
 ## Fall 2019
 ## Project 4: Algorithm implementation from scratch and evaluation – Collaborative Filtering
 
-### ![](output/nyc-street-trees.jpg)
+### ![](figs/final result.jpg)
 
 ## Gradient Descent and Alternating Least Squares for movie rating predictions
 
